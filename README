@@ -19,3 +19,7 @@ SUM_L  sum of TX_L and RX_L
 TX_M   tx_bytes since beginning of this month (actually this log file)
 RX_M   rx_bytes since beginning of this month
 SUM_M  sum of TX_M and RX_M
+
+example log line:
+
+2021-10-18 11:38:00 31832148 1191376080 1223208228 6528 266613 273141 76961 2174380 2251341
