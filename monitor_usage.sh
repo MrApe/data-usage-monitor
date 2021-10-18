@@ -1,16 +1,17 @@
 #!/bin/sh
 
 if [ "$1" = "report" ]; then
-  echo "TX      RX      SUM"
+  echo "MONTH    TX       RX       SUM"
   for f in $(ls usage_*); do
     LAST=$(tail -n1 $f)
+    MONTH=$(echo $LAST | head -c7)
     TX=$(echo $LAST | cut -d' ' -f9)
     TX="$(( $TX / 1024 / 1024 )) MiB"
     RX=$(echo $LAST | cut -d' ' -f10)
     RX="$(( $RX / 1024 / 1024 )) MiB"
     SUM=$(echo $LAST | cut -d' ' -f11)
     SUM="$(( $SUM / 1024 / 1024 )) MiB"
-    echo "$TX  $RX  $SUM"
+    echo "$MONTH  $TX   $RX   $SUM"
   done
   exit 0
 fi
