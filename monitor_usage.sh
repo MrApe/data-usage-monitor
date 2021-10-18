@@ -1,25 +1,50 @@
 #!/bin/sh
 
+PREFIX="/mnt/usb"
+
+function humanize() {
+  X=$1
+  if [ $X -lt 1000 ]; then
+    X="$X Byte"
+  else
+    X=$(( $X / 1000 ))
+    if [ $X -lt 1000 ]; then
+      X="$X kB"
+    else
+      X=$(( $X / 1000 ))
+      if [ $X -lt 1000 ]; then
+        X="$X MB"
+      else
+        X=$(( $X / 1000 ))
+        if [ $X -lt 1000 ]; then
+          X="$X GB"
+        else
+          X="$(( $X / 1000 )) TB"
+        fi
+      fi
+    fi
+  fi
+  echo $X
+}
+
 if [ "$1" = "report" ]; then
   echo "MONTH    TX       RX       SUM"
+  cd $PREFIX
   for f in $(ls usage_*); do
     LAST=$(tail -n1 $f)
-    MONTH=$(echo $LAST | head -c7)
-    TX=$(echo $LAST | cut -d' ' -f9)
-    TX="$(( $TX / 1024 / 1024 )) MiB"
-    RX=$(echo $LAST | cut -d' ' -f10)
-    RX="$(( $RX / 1024 / 1024 )) MiB"
-    SUM=$(echo $LAST | cut -d' ' -f11)
-    SUM="$(( $SUM / 1024 / 1024 )) MiB"
+    MONTH=$(echo $LAST | sed 's/-[0-9][0-9] .*//g')
+    TX=$(humanize $(echo $LAST | cut -d' ' -f9) )
+    RX=$(humanize $(echo $LAST | cut -d' ' -f10) )
+    SUM=$(humanize $(echo $LAST | cut -d' ' -f11) )
     echo "$MONTH  $TX   $RX   $SUM"
   done
+  cd - >/dev/null 2>&1
   exit 0
 fi
 
 [ "$1" != "" ] && DEV="$1" || DEV=eth0
 
 STATISTICS="/sys/class/net/${DEV}/statistics"
-PREFIX="/mnt/usb"
 DATE=$(date +"%Y-%m-%d %H:%M:%S")
 MONTH=$(date +%y-%m)
 FILE="${PREFIX}/usage_${DEV}_${MONTH}.log"
