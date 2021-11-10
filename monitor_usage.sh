@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PREFIX="/mnt/usb"
+PREFIX="/run/media/sda1"
 
 function humanize() {
   X=$1
@@ -27,10 +27,17 @@ function humanize() {
   echo $X
 }
 
-if [ "$1" = "report" ]; then
+# report mode
+if [ "$1" = "report" ] || [ "$2" = "report" ]; then
+  
+  # device default
+  DEV=eth0 
+  [ "$2" = "report" ] && DEV="$1"
+  [ "$1" = "report" ] && [ "$2" != "" ] && DEV="$2"
+     
   echo "MONTH    TX       RX       SUM"
   cd $PREFIX
-  for f in $(ls usage_*); do
+  for f in $(ls usage_${DEV}_*); do
     LAST=$(tail -n1 $f)
     MONTH=$(echo $LAST | sed 's/-[0-9][0-9] .*//g')
     TX=$(humanize $(echo $LAST | cut -d' ' -f9) )
@@ -42,6 +49,7 @@ if [ "$1" = "report" ]; then
   exit 0
 fi
 
+# monitor mode
 [ "$1" != "" ] && DEV="$1" || DEV=eth0
 
 STATISTICS="/sys/class/net/${DEV}/statistics"
@@ -66,8 +74,10 @@ fi
 
 if [ "$LAST" != "" ]; then 
   LAST_TX_BYTES=$(echo "$LAST" | cut -d' ' -f3)
+  [ $LAST_TX_BYTES -gt $TX_BYTES ] && TX_BYTES=$(( $TX_BYTES + $LAST_TX_BYTES ))
   CHANGE_TX_BYTES=$(( $TX_BYTES - $LAST_TX_BYTES ))
   LAST_RX_BYTES=$(echo "$LAST" | cut -d' ' -f4)
+  [ $LAST_RX_BYTES -gt $RX_BYTES ] && RX_BYTES=$(( $RX_BYTES + $LAST_RX_BYTES ))
   CHANGE_RX_BYTES=$(( $RX_BYTES - $LAST_RX_BYTES ))
   CHANGE_SUM=$(( $CHANGE_RX_BYTES + $CHANGE_TX_BYTES ))
 else
@@ -90,3 +100,7 @@ else
 fi
 
 echo "$DATE $TX_BYTES $RX_BYTES $SUM $CHANGE_TX_BYTES $CHANGE_RX_BYTES $CHANGE_SUM $CHANGE_TX_BYTES_MONTH $CHANGE_RX_BYTES_MONTH $CHANGE_SUM_MONTH" >> "$FILE"
+
+echo "$(humanize ${CHANGE_RX_BYTES_MONTH} )" > /run/usage_${DEV}.rx
+echo "$(humanize ${CHANGE_TX_BYTES_MONTH} )" > /run/usage_${DEV}.tx
+echo "$(humanize ${CHANGE_SUM_MONTH} )" > /run/usage_${DEV}

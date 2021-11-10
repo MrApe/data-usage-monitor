@@ -10,11 +10,11 @@ DA TI TX_C RX_C SUM TX_L RX_L SUM_L TX_M RX_M SUM_M
 
 DA     current date
 TI     current time
-TX_C   tx_bytes as currently reported by the kernel
-RX_C   rx_bytes as currently reported by the kernel
+TX_C   tx_bytes as currently reported by the kernel (eventually adjusted due to reboots)
+RX_C   rx_bytes as currently reported by the kernel (eventually adjusted due to reboots)
 SUM    sum of TX_C and RX_C
-TX_L   tx_bytes since last measured
-RX_L   rx_bytes since last measured
+TX_L   tx_bytes since last measured (increment)
+RX_L   rx_bytes since last measured (increment)
 SUM_L  sum of TX_L and RX_L
 TX_M   tx_bytes since beginning of this month (actually this log file)
 RX_M   rx_bytes since beginning of this month
